@@ -71,6 +71,7 @@
     if (logEl) { logEl.remove(); }
     update(running, occupied, usage);
     state = { envs, running, occupied, usage };
+    window.state = state;
 
     function update(r, occ, use){
       for (const { env, card } of cards) {
@@ -98,7 +99,7 @@
     const message = event.data;
     if (message.type === 'init') { log('init received'); render(message.envs, message.running, message.occupied, message.usage); }
     if (message.type === 'status') {
-      state.running = message.running; state.occupied = message.occupied; state.usage = message.usage;
+      state.running = message.running; state.occupied = message.occupied; state.usage = message.usage; window.state = state;
       if (render.update) render.update(state.running, state.occupied, state.usage);
     }
   });

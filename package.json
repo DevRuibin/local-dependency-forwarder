@@ -2,7 +2,8 @@
   "name": "local-dependency-forwarder",
   "displayName": "Local Dependency Forwarder",
   "description": "Forward all dependencies, so we can develop locally",
-  "version": "0.0.1",
+  "version": "0.0.3",
+  "publisher": "Ruibin",
   "engines": {
     "vscode": "^1.105.0"
   },

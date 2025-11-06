@@ -28,7 +28,7 @@ export class AdminPanel {
       { enableScripts: true }
     );
     this.panel.webview.html = getHtml(this.panel.webview);
-    this.panel.onDidDispose(() => onDidDispose(), null, this.context.subscriptions);
+    this.panel.onDidDispose(() => { this.panel = undefined; onDidDispose(); }, null, this.context.subscriptions);
     return this.panel.webview;
   }
 }

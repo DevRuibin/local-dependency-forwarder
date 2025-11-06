@@ -1,71 +1,55 @@
-# local-dependency-forwarder README
+### Local Dependency Forwarder
 
-This is the README for your extension "local-dependency-forwarder". After writing up a brief description, we recommend including the following sections.
+Forward database/redis/rabbitmq and Kubernetes services to your machine with one-click toggles in a VS Code panel.
 
-## Features
+### Why
+- Quickly switch between environments (e.g. TH/PH) while developing locally.
+- Prevent port conflicts automatically and show who is using a port.
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+### Features
+- Admin panel with environment cards and master/item toggles
+- SSH tunnels (ssh -NL) and `kubectl port-forward`
+- Port conflict detection and friendly messages
+- Configurable via JSON at workspace and/or global level
 
-For example if there is an image subfolder under your extension project workspace:
+### Requirements
+- ssh client available on PATH and access to your jump hosts
+- kubectl for Kubernetes forwards (optional)
 
-\!\[feature X\]\(images/feature-x.png\)
+### Configuration
+The extension reads environments from (merged, workspace overrides global):
+- Workspace: `.vscode/local-dependency-forwarder.json`
+- Global: `~/.vscode/local-dependency-forwarder.json`
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+Each file contains an array of environments:
 
-## Requirements
+```json
+[
+  {
+    "id": "th",
+    "name": "TH",
+    "kubectlContext": "stg4",
+    "sshTunnels": [
+      { "id": "db-3316", "title": "database:3316", "localPort": 3316, "remoteHost": "1.2.3.4", "remotePort": 3306, "sshHost": "stg4" }
+    ],
+    "k8sForwards": [
+      { "id": "loan-trade", "title": "loan-trade:18001", "namespace": "th-finance", "serviceName": "loan-trade", "localPort": 18001, "remotePort": 8001 }
+    ]
+  }
+]
+```
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+Tips:
+- Use unique `localPort` values per environment to avoid conflicts.
+- The panel shows a tooltip/explainer if a port is already in use.
 
-## Extension Settings
+### Usage
+1. Command Palette → `Local Dependency Forwarder: Open Panel`
+2. Toggle items or the environment switch. The master switch turns ON when any item is ON.
+3. Check Output → `Local Dependency Forwarder` for ssh/kubectl logs.
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+### Privacy
+No credentials or host details are stored in the extension. Put your endpoints in the JSON config files listed above.
 
-For example:
-
-This extension contributes the following settings:
-
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
-
-## Known Issues
-
-Calling out known issues can help limit users opening duplicate issues against your extension.
-
-## Release Notes
-
-Users appreciate release notes as you update your extension.
-
-### 1.0.0
-
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
----
-
-## Following extension guidelines
-
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
-
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
-
-## Working with Markdown
-
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+### License
+MIT

@@ -61,7 +61,10 @@ export async function activate(context: vscode.ExtensionContext) {
         if (configErrors.length) {
             vscode.window.showErrorMessage('Config errors: ' + configErrors.join(' | '));
         }
-        const sendInit = () => webview.postMessage({ type: 'init', envs: manager.getEnvironments(), running: runningKeys(), occupied: occupiedPorts(), usage: portUsage() });
+        const post = (msg: any) => { try { webview.postMessage(msg); } catch {} };
+        const sendInit = () => post({ type: 'init', envs: manager.getEnvironments(), running: runningKeys(), occupied: occupiedPorts(), usage: portUsage() });
+        // fire an eager init as a fallback
+        setTimeout(() => sendInit(), 50);
         webview.onDidReceiveMessage(async (message: WebviewMessage) => {
             if (message.type === 'ready') {
                 sendInit();
@@ -84,7 +87,7 @@ export async function activate(context: vscode.ExtensionContext) {
                 } catch (e: any) {
                     vscode.window.showErrorMessage(String(e?.message ?? e));
                 }
-                webview.postMessage({ type: 'status', running: runningKeys(), occupied: occupiedPorts(), usage: portUsage() });
+                post({ type: 'status', running: runningKeys(), occupied: occupiedPorts(), usage: portUsage() });
                 return;
             }
             if (message.type === 'toggleAll') {
@@ -97,7 +100,7 @@ export async function activate(context: vscode.ExtensionContext) {
                 } else {
                     await manager.stopAllForEnv(message.envId);
                 }
-                webview.postMessage({ type: 'status', running: runningKeys(), occupied: occupiedPorts(), usage: portUsage() });
+                post({ type: 'status', running: runningKeys(), occupied: occupiedPorts(), usage: portUsage() });
                 return;
             }
         }, undefined, context.subscriptions);
