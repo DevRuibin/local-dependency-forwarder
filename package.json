@@ -4,6 +4,10 @@
   "description": "Forward all dependencies, so we can develop locally",
   "version": "0.0.7",
   "publisher": "Ruibin",
+    "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DevRuibin/local-dependency-forwarder.git"
+  },
   "icon": "media/icon.png",
   "engines": {
     "vscode": "^1.99.0"
