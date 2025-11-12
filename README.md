@@ -21,19 +21,23 @@ The extension reads environments from (merged, workspace overrides global):
 - Workspace: `.vscode/local-dependency-forwarder.json`
 - Global: `~/.vscode/local-dependency-forwarder.json`
 
-Each file contains an array of environments:
+Each file contains an array of environments (example):
 
 ```json
 [
   {
-    "id": "th",
-    "name": "TH",
-    "kubectlContext": "stg4",
+    "id": "sample",
+    "name": "Sample",
+    "kubectlContext": "your-kube-context",
+    "sshAddKeys": [
+      "~/.ssh/id_ed25519",
+      "~/.ssh/sso-private-key.pem"
+    ],
     "sshTunnels": [
-      { "id": "db-3316", "title": "database:3316", "localPort": 3316, "remoteHost": "1.2.3.4", "remotePort": 3306, "sshHost": "stg4" }
+      { "id": "db-3316", "title": "database", "localPort": 3316, "remoteHost": "10.0.0.10", "remotePort": 3306, "sshHost": "jump-host" }
     ],
     "k8sForwards": [
-      { "id": "loan-trade", "title": "loan-trade:18001", "namespace": "th-finance", "serviceName": "loan-trade", "localPort": 18001, "remotePort": 8001 }
+      { "id": "svc", "title": "svc", "namespace": "sample-ns", "serviceName": "svc", "localPort": 18001, "remotePort": 8001 }
     ]
   }
 ]
@@ -42,6 +46,7 @@ Each file contains an array of environments:
 Tips:
 - Use unique `localPort` values per environment to avoid conflicts.
 - The panel shows a tooltip/explainer if a port is already in use.
+- If `sshAddKeys` files exist, the extension will try `ssh-add <file>` before starting forwards (non-blocking). Missing files are skipped.
 
 ### Usage
 1. Command Palette → `Local Dependency Forwarder: Open Panel`

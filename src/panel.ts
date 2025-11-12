@@ -4,11 +4,13 @@ import { EnvironmentConfig, ForwardKey } from './config';
 export type WebviewMessage =
   | { type: 'ready' }
   | { type: 'toggle'; key: ForwardKey }
-  | { type: 'toggleAll'; envId: string; start: boolean };
+  | { type: 'toggleAll'; envId: string; start: boolean }
+  // extra messages from webview script
+  | { type: 'stopAll' };
 
 export type HostMessage =
-  | { type: 'init'; envs: EnvironmentConfig[]; running: string[] }
-  | { type: 'status'; running: string[] };
+  | { type: 'init'; envs: EnvironmentConfig[]; running: string[]; occupied?: number[]; usage?: { port: number; key: string }[] }
+  | { type: 'status'; running: string[]; occupied?: number[]; usage?: { port: number; key: string }[] };
 
 export class AdminPanel {
   static readonly viewType = 'localDependencyForwarder.admin';
@@ -46,6 +48,10 @@ export function buildHtml(webview: vscode.Webview, extensionUri: vscode.Uri): st
     <title>Local Dependency Forwarder</title>
     <style>
       body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, Noto Sans, 'Apple Color Emoji', 'Segoe UI Emoji'; padding: 12px; }
+      #toolbar { display:flex; align-items:center; gap: 8px; margin-bottom: 12px; }
+      .btn { appearance: none; border: 1px solid #c3cfe6; background: #f6f9ff; color: #223; padding: 6px 10px; border-radius: 6px; cursor: pointer; }
+      .btn.danger { border-color: #f0b7b7; background: #fdecec; color: #8a1f1f; }
+      .btn:disabled { opacity: .6; cursor: not-allowed; }
       .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 16px; }
       .card { background: #eef3fb; border-radius: 8px; padding: 12px 16px; box-shadow: 0 0 0 1px #d9e2f3 inset; }
       .header { display:flex; align-items:center; justify-content: space-between; margin-bottom: 8px; }
@@ -63,6 +69,9 @@ export function buildHtml(webview: vscode.Webview, extensionUri: vscode.Uri): st
     </style>
   </head>
   <body>
+    <div id="toolbar">
+      <button id="btnStopAll" class="btn" title="Stop all forwards and clean ssh listeners">Stop All</button>
+    </div>
     <div class="grid" id="grid"></div>
     <pre id="log" class="muted">Loading…</pre>
     <script nonce="${nonce}" src="${scriptUri}"></script>

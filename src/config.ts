@@ -20,6 +20,8 @@ export type EnvironmentConfig = {
   id: string;
   name: string;
   kubectlContext?: string;
+  // Optional: ssh key files to add to agent before starting forwards
+  sshAddKeys?: string[];
   sshTunnels: SshTunnel[];
   k8sForwards: K8sForward[];
 };
@@ -71,11 +73,15 @@ export function sampleConfig(): EnvironmentConfig[] {
       id: 'example',
       name: 'Example',
       kubectlContext: 'your-kube-context',
+      sshAddKeys: [
+        '~/.ssh/id_ed25519',
+        '~/.ssh/sso-private-key.pem'
+      ],
       sshTunnels: [
-        { id: 'db', title: 'database:3316', localPort: 3316, remoteHost: '1.2.3.4', remotePort: 3306, sshHost: 'stg' }
+        { id: 'db', title: 'database', localPort: 3316, remoteHost: '1.2.3.4', remotePort: 3306, sshHost: 'stg' }
       ],
       k8sForwards: [
-        { id: 'svc', title: 'service:18001', namespace: 'ns', serviceName: 'svc', localPort: 18001, remotePort: 8001 }
+        { id: 'svc', title: 'service', namespace: 'ns', serviceName: 'svc', localPort: 18001, remotePort: 8001 }
       ]
     }
   ];

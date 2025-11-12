@@ -48,8 +48,8 @@
       rows.push(toggle); card.appendChild(row);
     }
 
-    for (const t of env.sshTunnels) { const key = env.id + ':ssh:' + t.id; addRow(t.title, key); }
-    for (const f of env.k8sForwards) { const key = env.id + ':k8s:' + f.id; addRow(f.title, key); }
+    for (const t of env.sshTunnels) { const key = env.id + ':ssh:' + t.id; addRow(labelForKey(env, key), key); }
+    for (const f of env.k8sForwards) { const key = env.id + ':k8s:' + f.id; addRow(labelForKey(env, key), key); }
 
     card.update = (running) => {
       let anyOn = false;
@@ -101,10 +101,49 @@
     if (message.type === 'status') {
       state.running = message.running; state.occupied = message.occupied; state.usage = message.usage; window.state = state;
       if (render.update) render.update(state.running, state.occupied, state.usage);
+      try { if (window.__maybeCompleteStopAll) window.__maybeCompleteStopAll(); } catch {}
     }
   });
 
   log('boot');
+  const btnStopAll = document.getElementById('btnStopAll');
+  if (btnStopAll) {
+    let stoppingAll = false;
+    btnStopAll.addEventListener('click', () => {
+      if (stoppingAll) return;
+      stoppingAll = true;
+      const originalText = btnStopAll.textContent;
+      btnStopAll.textContent = 'Stopping…';
+      btnStopAll.disabled = true;
+      btnStopAll.classList.add('danger');
+      vscode.postMessage({ type: 'stopAll' });
+      // Re-enable will be handled after we observe no running items via status event
+      // Fallback safety: re-enable after 5s even if no status arrives
+      setTimeout(() => {
+        if (!stoppingAll) return;
+        btnStopAll.textContent = originalText;
+        btnStopAll.disabled = false;
+        btnStopAll.classList.remove('danger');
+        stoppingAll = false;
+      }, 5000);
+    });
+    // Listen for completion via status updates
+    const maybeCompleteStopAll = () => {
+      if (!stoppingAll) return;
+      const anyRunning = state && Array.isArray(state.running) && state.running.length > 0;
+      if (!anyRunning) {
+        btnStopAll.textContent = 'Stopped';
+        setTimeout(() => {
+          btnStopAll.textContent = 'Stop All';
+          btnStopAll.disabled = false;
+          btnStopAll.classList.remove('danger');
+          stoppingAll = false;
+        }, 900);
+      }
+    };
+    // Hook into message handler below (see window.addEventListener('message', …))
+    window.__maybeCompleteStopAll = maybeCompleteStopAll;
+  }
   vscode.postMessage({ type: 'ready' });
 })();
 
@@ -125,4 +164,21 @@ function blockedReason(env, key){
   return '';
 }
 
+
+function labelForKey(env, key){
+  const [, kind, id] = key.split(':');
+  if (kind === 'ssh') {
+    const t = env.sshTunnels.find(x => x.id === id);
+    if (!t) return key;
+    const base = (t.title || '').replace(/:\\d+$/, '');
+    return `${t.localPort}:${base}:${t.remotePort}`;
+  }
+  if (kind === 'k8s') {
+    const f = env.k8sForwards.find(x => x.id === id);
+    if (!f) return key;
+    const base = (f.title || '').replace(/:\\d+$/, '');
+    return `${f.localPort}:${base}:${f.remotePort}`;
+  }
+  return key;
+}
 

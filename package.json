@@ -2,23 +2,30 @@
   "name": "local-dependency-forwarder",
   "displayName": "Local Dependency Forwarder",
   "description": "Forward all dependencies, so we can develop locally",
-  "version": "0.0.4",
+  "version": "0.0.7",
   "publisher": "Ruibin",
+  "icon": "media/icon.png",
   "engines": {
     "vscode": "^1.99.0"
   },
   "categories": [
     "Other"
   ],
-  "activationEvents": [
-    "onCommand:local-dependency-forwarder.openPanel"
-  ],
+  "activationEvents": [],
   "main": "./dist/extension.js",
   "contributes": {
     "commands": [
       {
         "command": "local-dependency-forwarder.openPanel",
         "title": "Local Dependency Forwarder: Open Panel"
+      },
+      {
+        "command": "local-dependency-forwarder.stopAll",
+        "title": "Local Dependency Forwarder: Stop All"
+      },
+      {
+        "command": "local-dependency-forwarder.resetOrphans",
+        "title": "Local Dependency Forwarder: Reset (Kill Orphaned Listeners)"
       }
     ]
   },
